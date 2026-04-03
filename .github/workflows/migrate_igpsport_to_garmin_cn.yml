@@ -1,0 +1,39 @@
+name: Migrate iGPSPORT FIT to Garmin CN
+
+on:
+  workflow_dispatch:
+    inputs:
+      import_start:
+        description: '从第几条 FIT 开始导入'
+        required: false
+        default: '0'
+      import_num:
+        description: '本次最多导入多少条 FIT'
+        required: false
+        default: '1'
+
+env:
+  BARK_KEY: ${{ secrets.BARK_KEY }}
+  GARMIN_USERNAME: ${{ secrets.GARMIN_USERNAME }}
+  GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
+  IGPSPORT_FIT_DIR: ./igpsport_fit_files
+  IGPSPORT_PATCHED_FIT_DIR: ./igpsport_fit_files_patched
+  IGPSPORT_PATCH_SCRIPT: ./scripts/patch_fit_remove_session_hr_zone.py
+  IGPSPORT_IMPORT_START: ${{ github.event.inputs.import_start || '0' }}
+  IGPSPORT_IMPORT_NUM: ${{ github.event.inputs.import_num || '1' }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Migrate iGPSPORT FIT to Garmin CN
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'yarn'
+      - run: corepack enable
+      - run: yarn
+      - run: yarn migrate_igpsport_to_garmin_cn
