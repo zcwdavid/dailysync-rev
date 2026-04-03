@@ -57,11 +57,19 @@ export const RQ_ROUTES_DEFAULT = {
 export const BARK_KEY_DEFAULT = '';
 
 /**
+ * iGPSPORT FIT IMPORT
+ */
+export const IGPSPORT_FIT_DIR = process.env.IGPSPORT_FIT_DIR || './igpsport_fit_files';
+export const IGPSPORT_PATCHED_FIT_DIR = process.env.IGPSPORT_PATCHED_FIT_DIR || './igpsport_fit_files_patched';
+export const IGPSPORT_PATCH_SCRIPT = process.env.IGPSPORT_PATCH_SCRIPT || './scripts/patch_fit_remove_session_hr_zone.py';
+export const IGPSPORT_IMPORT_START = Number(process.env.IGPSPORT_IMPORT_START || 0);
+export const IGPSPORT_IMPORT_NUM = Number(process.env.IGPSPORT_IMPORT_NUM || 0);
+
+/**
  * STRAVA ACCOUNT
  */
 export const STRAVA_ACCESS_TOKEN_DEFAULT = '';
 export const STRAVA_CLIENT_ID_DEFAULT = '';
 export const STRAVA_CLIENT_SECRET_DEFAULT = '';
 export const STRAVA_REDIRECT_URI_DEFAULT = '';
-
 

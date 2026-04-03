@@ -98,9 +98,9 @@ RawContent        : HTTP/1.1 200 OK
 Forms             : {f}
 Headers           : {[ https://csp.withgoogle.com/csp/gws/other-hp], [Cache-Control, private, max
                     -age=0], [Content-Type, text/html; charset=UTF-8]...}
-Images            : {@{innerHTML=; n value=zh-HK name=hl>; outerText=; tagName=I
+Images            : @{innerHTML=; n value=zh-HK name=hl>; outerText=; tagName=I
                     NPUT; th}...}
-Links             : {@{i id=gb_78; class=gbzt;
+Links             : @{i id=gb_78; class=gbzt;
                      href=https://play.google.com/?hl=zh-TW&amp;tab=w8}...}
 ParsedHtml        : mshtml.HTMLDocumentClass
 RawContentLength  : 52716
@@ -199,6 +199,39 @@ yarn migrate_garmin_cn_to_global
 ```shell
 yarn migrate_garmin_global_to_cn
 ```
+
+### 导入 iGPSPORT 导出的 FIT 到佳明中国区
+适用于先从 iGPSPORT 手工导出 `.fit` 文件，再导入到佳明中国区的场景。
+
+1. 将原始 `.fit` 文件放到项目根目录下的 `igpsport_fit_files` 文件夹中
+2. 配置 `.env` 中的 iGPSPORT 导入参数
+3. 运行下面命令
+
+```shell
+npm run migrate_igpsport_to_garmin_cn
+```
+
+脚本会先调用 `scripts/patch_fit_remove_session_hr_zone.py` 处理 FIT 文件，再上传到佳明中国区。
+
+相关环境变量说明：
+
+```shell
+IGPSPORT_FIT_DIR=./igpsport_fit_files
+IGPSPORT_PATCHED_FIT_DIR=./igpsport_fit_files_patched
+IGPSPORT_PATCH_SCRIPT=./scripts/patch_fit_remove_session_hr_zone.py
+IGPSPORT_IMPORT_START=0
+IGPSPORT_IMPORT_NUM=1
+```
+
+说明：
+
+- `IGPSPORT_FIT_DIR`：原始 FIT 文件目录
+- `IGPSPORT_PATCHED_FIT_DIR`：处理后的 FIT 输出目录
+- `IGPSPORT_PATCH_SCRIPT`：补丁脚本路径
+- `IGPSPORT_IMPORT_START`：从排序后的第几条 FIT 开始导入
+- `IGPSPORT_IMPORT_NUM`：本次最多导入多少条，适合单个验证时设为 `1`
+
+如果 Garmin 返回 `Duplicate Activity.`，脚本会输出跳过日志，不会重复导入同一条活动。
 
 #### 常见问题
 
