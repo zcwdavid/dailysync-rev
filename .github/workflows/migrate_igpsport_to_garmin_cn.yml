@@ -16,6 +16,8 @@ env:
   BARK_KEY: ${{ secrets.BARK_KEY }}
   GARMIN_USERNAME: ${{ secrets.GARMIN_USERNAME }}
   GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
+  IGPSPORT_USERNAME: ${{ secrets.IGPSPORT_USERNAME }}
+  IGPSPORT_PASSWORD: ${{ secrets.IGPSPORT_PASSWORD }}
   IGPSPORT_FIT_DIR: ./igpsport_fit_files
   IGPSPORT_PATCHED_FIT_DIR: ./igpsport_fit_files_patched
   IGPSPORT_PATCH_SCRIPT: ./scripts/patch_fit_remove_session_hr_zone.py

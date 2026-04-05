@@ -2,6 +2,9 @@ import fs from 'fs';
 import path from 'path';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
+import { createHash } from 'crypto';
+
+const axios = require('axios');
 
 import {
     IGPSPORT_FIT_DIR,
@@ -9,7 +12,94 @@ import {
     IGPSPORT_IMPORT_START,
     IGPSPORT_PATCHED_FIT_DIR,
     IGPSPORT_PATCH_SCRIPT,
+    IGPSPORT_USERNAME,
+    IGPSPORT_PASSWORD,
 } from '../constant';
+
+const IGPSPORT_BASE_URL = 'https://prod.zh.igpsport.com/service';
+
+const igpsportLogin = async (username: string, password: string): Promise<string> => {
+    const md5Password = createHash('md5').update(password).digest('hex');
+    const response = await axios.post(`${IGPSPORT_BASE_URL}/auth/account/login`, {
+        account: username,
+        password: md5Password,
+    });
+    const token = response.data?.data?.access_token;
+    if (!token) {
+        throw new Error(`iGPSPORT login failed: ${JSON.stringify(response.data)}`);
+    }
+    return token;
+};
+
+const igpsportGetActivities = async (token: string): Promise<any[]> => {
+    const totalNeeded = IGPSPORT_IMPORT_START + (IGPSPORT_IMPORT_NUM > 0 ? IGPSPORT_IMPORT_NUM : 100);
+    const pageSize = 100;
+    let allActivities: any[] = [];
+    let page = 1;
+
+    while (allActivities.length < totalNeeded) {
+        const response = await axios.get(
+            `${IGPSPORT_BASE_URL}/web-gateway/web-analyze/activity/queryMyActivity`,
+            {
+                headers: { Authorization: `Bearer ${token}` },
+                params: { page, pageSize },
+            }
+        );
+        const list: any[] = response.data?.data?.list ?? [];
+        allActivities = allActivities.concat(list);
+        if (list.length < pageSize) break;
+        page++;
+    }
+
+    const end = IGPSPORT_IMPORT_NUM > 0 ? IGPSPORT_IMPORT_START + IGPSPORT_IMPORT_NUM : undefined;
+    return allActivities.slice(IGPSPORT_IMPORT_START, end);
+};
+
+const igpsportGetDownloadUrl = async (token: string, activityId: string | number): Promise<string> => {
+    const response = await axios.get(
+        `${IGPSPORT_BASE_URL}/web-gateway/web-analyze/activity/getDownloadUrl/${activityId}`,
+        {
+            headers: { Authorization: `Bearer ${token}` },
+            params: { reqType: 0 },
+        }
+    );
+    const url = response.data?.data;
+    if (!url) {
+        throw new Error(`iGPSPORT: no download URL for activity ${activityId}: ${JSON.stringify(response.data)}`);
+    }
+    return url;
+};
+
+export const downloadIGPSportFitFiles = async (): Promise<void> => {
+    if (!IGPSPORT_USERNAME || !IGPSPORT_PASSWORD) {
+        throw new Error('IGPSPORT_USERNAME and IGPSPORT_PASSWORD are required');
+    }
+
+    ensureDir(IGPSPORT_FIT_DIR);
+
+    const token = await igpsportLogin(IGPSPORT_USERNAME, IGPSPORT_PASSWORD);
+    console.log('iGPSPORT login success');
+
+    const activities = await igpsportGetActivities(token);
+    console.log(`iGPSPORT: ${activities.length} activities to download`);
+
+    for (let i = 0; i < activities.length; i++) {
+        const act = activities[i];
+        const actId = act.id ?? act.activityId;
+        const filePath = path.join(IGPSPORT_FIT_DIR, `${actId}.fit`);
+
+        if (fs.existsSync(filePath)) {
+            console.log(`skip existing: ${filePath}`);
+            continue;
+        }
+
+        console.log(`downloading ${i + 1}/${activities.length}: activity ${actId}`);
+        const downloadUrl = await igpsportGetDownloadUrl(token, actId);
+        const fileResponse = await axios.get(downloadUrl, { responseType: 'arraybuffer' });
+        fs.writeFileSync(filePath, fileResponse.data);
+        console.log(`saved: ${filePath}`);
+    }
+};
 
 const execFileAsync = promisify(execFile);
 

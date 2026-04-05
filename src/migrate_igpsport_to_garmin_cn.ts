@@ -1,7 +1,7 @@
 import { BARK_KEY_DEFAULT } from './constant';
 import { uploadGarminActivity } from './utils/garmin_common';
 import { getGaminCNClient } from './utils/garmin_cn';
-import { prepareIGPSportFitFiles } from './utils/igpsport';
+import { downloadIGPSportFitFiles, prepareIGPSportFitFiles } from './utils/igpsport';
 
 const axios = require('axios');
 const core = require('@actions/core');
@@ -15,6 +15,7 @@ const isDuplicateActivityError = (error: unknown): boolean => {
 
 export const migrateIGPSportToGarminCN = async () => {
     const clientCN = await getGaminCNClient();
+    await downloadIGPSportFitFiles();
     const patchedFiles = await prepareIGPSportFitFiles();
 
     for (let i = 0; i < patchedFiles.length; i++) {

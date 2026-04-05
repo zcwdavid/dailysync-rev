@@ -59,6 +59,8 @@ export const BARK_KEY_DEFAULT = '';
 /**
  * iGPSPORT FIT IMPORT
  */
+export const IGPSPORT_USERNAME = process.env.IGPSPORT_USERNAME || '';
+export const IGPSPORT_PASSWORD = process.env.IGPSPORT_PASSWORD || '';
 export const IGPSPORT_FIT_DIR = process.env.IGPSPORT_FIT_DIR || './igpsport_fit_files';
 export const IGPSPORT_PATCHED_FIT_DIR = process.env.IGPSPORT_PATCHED_FIT_DIR || './igpsport_fit_files_patched';
 export const IGPSPORT_PATCH_SCRIPT = process.env.IGPSPORT_PATCH_SCRIPT || './scripts/patch_fit_remove_session_hr_zone.py';
