@@ -16,7 +16,15 @@ const isDuplicateActivityError = (error: unknown): boolean => {
 export const migrateIGPSportToGarminCN = async () => {
     const clientCN = await getGaminCNClient();
     await downloadIGPSportFitFiles();
-    const patchedFiles = await prepareIGPSportFitFiles();
+    const patchedFiles = await prepareIGPSportFitFiles().catch((e: unknown) => {
+        const msg = e instanceof Error ? e.message : String(e);
+        if (msg.includes('no .fit files found')) {
+            console.log('no new iGPSPORT activities to import');
+            return [];
+        }
+        throw e;
+    });
+    if (patchedFiles.length === 0) return;
 
     for (let i = 0; i < patchedFiles.length; i++) {
         const filePath = patchedFiles[i];

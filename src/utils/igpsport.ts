@@ -49,7 +49,9 @@ const igpsportGetActivities = async (token: string): Promise<any[]> => {
         ).catch((e: any) => {
             throw new Error(`iGPSPORT getActivities failed [${e.response?.status}] ${listUrl}: ${JSON.stringify(e.response?.data)}`);
         });
-        const list: any[] = response.data?.data?.list ?? [];
+        console.log('iGPSPORT activities response:', JSON.stringify(response.data).slice(0, 500));
+        const data = response.data?.data;
+        const list: any[] = data?.rows ?? data?.list ?? data?.records ?? [];
         allActivities = allActivities.concat(list);
         if (list.length < pageSize) break;
         page++;
@@ -86,10 +88,13 @@ export const downloadIGPSportFitFiles = async (): Promise<void> => {
 
     const activities = await igpsportGetActivities(token);
     console.log(`iGPSPORT: ${activities.length} activities to download`);
+    if (activities.length > 0) {
+        console.log('iGPSPORT activity sample keys:', Object.keys(activities[0]));
+    }
 
     for (let i = 0; i < activities.length; i++) {
         const act = activities[i];
-        const actId = act.id ?? act.activityId;
+        const actId = act.rideId ?? act.id ?? act.activityId;
         const filePath = path.join(IGPSPORT_FIT_DIR, `${actId}.fit`);
 
         if (fs.existsSync(filePath)) {
