@@ -2,8 +2,6 @@ import fs from 'fs';
 import path from 'path';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
-import { createHash } from 'crypto';
-
 const axios = require('axios');
 
 import {
@@ -19,10 +17,14 @@ import {
 const IGPSPORT_BASE_URL = 'https://prod.zh.igpsport.com/service';
 
 const igpsportLogin = async (username: string, password: string): Promise<string> => {
-    const md5Password = createHash('md5').update(password).digest('hex');
-    const response = await axios.post(`${IGPSPORT_BASE_URL}/auth/account/login`, {
-        account: username,
-        password: md5Password,
+    const url = `${IGPSPORT_BASE_URL}/auth/account/login`;
+    console.log(`iGPSPORT login: POST ${url}`);
+    const response = await axios.post(url, {
+        appId: 'igpsport-web',
+        username,
+        password,
+    }).catch((e: any) => {
+        throw new Error(`iGPSPORT login failed [${e.response?.status}] ${url}: ${JSON.stringify(e.response?.data)}`);
     });
     const token = response.data?.data?.access_token;
     if (!token) {
@@ -38,13 +40,15 @@ const igpsportGetActivities = async (token: string): Promise<any[]> => {
     let page = 1;
 
     while (allActivities.length < totalNeeded) {
-        const response = await axios.get(
-            `${IGPSPORT_BASE_URL}/web-gateway/web-analyze/activity/queryMyActivity`,
-            {
+        const listUrl = `${IGPSPORT_BASE_URL}/web-gateway/web-analyze/activity/queryMyActivity`;
+        console.log(`iGPSPORT activities: GET ${listUrl} pageNo=${page}`);
+        const response = await axios.get(listUrl, {
                 headers: { Authorization: `Bearer ${token}` },
-                params: { page, pageSize },
+                params: { pageNo: page, pageSize, sort: '1', reqType: '0' },
             }
-        );
+        ).catch((e: any) => {
+            throw new Error(`iGPSPORT getActivities failed [${e.response?.status}] ${listUrl}: ${JSON.stringify(e.response?.data)}`);
+        });
         const list: any[] = response.data?.data?.list ?? [];
         allActivities = allActivities.concat(list);
         if (list.length < pageSize) break;
