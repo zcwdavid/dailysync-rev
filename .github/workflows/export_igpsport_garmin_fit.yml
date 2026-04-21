@@ -1,0 +1,43 @@
+name: Export iGPSPORT FIT to Garmin FIT
+
+on:
+  workflow_dispatch:
+    inputs:
+      export_start:
+        description: '从第几条 iGPSPORT 记录开始导出'
+        required: false
+        default: '0'
+      export_num:
+        description: '本次最多导出多少条 FIT'
+        required: false
+        default: '1'
+
+env:
+  BARK_KEY: ${{ secrets.BARK_KEY }}
+  IGPSPORT_USERNAME: ${{ secrets.IGPSPORT_USERNAME }}
+  IGPSPORT_PASSWORD: ${{ secrets.IGPSPORT_PASSWORD }}
+  IGPSPORT_FIT_DIR: ./igpsport_fit_files
+  IGPSPORT_PATCHED_FIT_DIR: ./igpsport_fit_files_patched
+  IGPSPORT_PATCH_SCRIPT: ./scripts/patch_fit_remove_session_hr_zone.py
+  IGPSPORT_EXPORT_START: ${{ github.event.inputs.export_start || '0' }}
+  IGPSPORT_EXPORT_NUM: ${{ github.event.inputs.export_num || '1' }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Export iGPSPORT FIT to Garmin FIT
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'yarn'
+      - run: corepack enable
+      - run: yarn
+      - run: yarn export_igpsport_garmin_fit
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: Export iGPSPORT Garmin FIT files
+          file_pattern: igpsport_fit_files/*.fit

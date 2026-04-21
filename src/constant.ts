@@ -66,6 +66,8 @@ export const IGPSPORT_PATCHED_FIT_DIR = process.env.IGPSPORT_PATCHED_FIT_DIR || 
 export const IGPSPORT_PATCH_SCRIPT = process.env.IGPSPORT_PATCH_SCRIPT || './scripts/patch_fit_remove_session_hr_zone.py';
 export const IGPSPORT_IMPORT_START = Number(process.env.IGPSPORT_IMPORT_START || 0);
 export const IGPSPORT_IMPORT_NUM = Number(process.env.IGPSPORT_IMPORT_NUM || 0);
+export const IGPSPORT_EXPORT_START = Number(process.env.IGPSPORT_EXPORT_START || IGPSPORT_IMPORT_START || 0);
+export const IGPSPORT_EXPORT_NUM = Number(process.env.IGPSPORT_EXPORT_NUM || IGPSPORT_IMPORT_NUM || 1);
 
 /**
  * STRAVA ACCOUNT
@@ -74,4 +76,3 @@ export const STRAVA_ACCESS_TOKEN_DEFAULT = '';
 export const STRAVA_CLIENT_ID_DEFAULT = '';
 export const STRAVA_CLIENT_SECRET_DEFAULT = '';
 export const STRAVA_REDIRECT_URI_DEFAULT = '';
-

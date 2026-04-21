@@ -233,6 +233,22 @@ IGPSPORT_IMPORT_NUM=1
 
 如果 Garmin 返回 `Duplicate Activity.`，脚本会输出跳过日志，不会重复导入同一条活动。
 
+### 导出 iGPSPORT FIT 为 Garmin 可导入 FIT
+适用于只想从 iGPSPORT 下载原始 `.fit`，转换为 Garmin 可导入格式，并保存到仓库中的场景，不会上传到 Garmin 中国区。
+
+在 GitHub Actions 中手动运行 `Export iGPSPORT FIT to Garmin FIT`，可配置：
+
+- `export_start`：从第几条 iGPSPORT 记录开始导出
+- `export_num`：本次最多导出多少条 FIT
+
+导出的文件会保存到 `igpsport_fit_files`，并按运动开始时间命名，例如：
+
+```shell
+igpsport_fit_files/2026-03-27-20-08-12.fit
+```
+
+Action 会自动提交新增的 `.fit` 文件到仓库。
+
 #### 常见问题
 
 如果上面ping都正常，却仍然不能正常运行，请尝试将梯子更换为美国IP
